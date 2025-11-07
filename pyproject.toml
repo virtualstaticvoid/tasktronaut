@@ -26,6 +26,7 @@ dev = [
   { include-group = "django-rq" },
   { include-group = "rq" },
   { include-group = "test" },
+  { include-group = "docs" },
   "ruff>=0.14.4",
   "pylint>=4.0.2",
   "mypy>=1.18.2",
