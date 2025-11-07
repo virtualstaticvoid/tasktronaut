@@ -24,6 +24,12 @@ jobs:
           name: coverage-report
           path: htmlcov
 
+      # add API token to `CODACY_PROJECT_TOKEN` action secrets
+      - name: Generate XML Coverage Report
+        run: uv run coverage xml
+      - name: Submit Coverage Report
+        run: bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
+
   build:
     name: Test Python package build
     runs-on: ubuntu-latest
