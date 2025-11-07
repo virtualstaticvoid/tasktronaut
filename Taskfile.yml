@@ -46,6 +46,13 @@ tasks:
     cmds:
       - uv run pytest --durations 10
 
+  build-docs:
+    desc: Build HTML documentation
+    dir: docs
+    cmds:
+      - uv run sphinx-apidoc -o source/api ../src/tasktronaut
+      - uv run make html
+
   # https://docs.astral.sh/uv/guides/package/#updating-your-version
   bump-version:
     desc: Bump Python package minor version
