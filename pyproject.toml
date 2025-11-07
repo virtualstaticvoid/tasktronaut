@@ -1,0 +1,99 @@
+[project]
+name = "tasktronaut"
+version = "0.1.0"
+description = "A simple task orchestration library for running complex processes or workflows in Python."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+  { name = "Chris Stefano", email = "virtualstaticvoid@gmail.com" },
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3 :: Only",
+]
+dependencies = [
+  "pydantic>=2.12.4",
+]
+
+[dependency-groups]
+dev = [
+  { include-group = "build" },
+  { include-group = "dagster" },
+  { include-group = "django-rq" },
+  { include-group = "rq" },
+  { include-group = "test" },
+  "ruff>=0.14.4",
+  "pylint>=4.0.2",
+  "mypy>=1.18.2",
+]
+rq = [
+  "redis>=7.0.1",
+  "rq>=2.6.0",
+]
+django-rq = [
+  "django-rq>=3.1",
+]
+dagster = [
+  "dagster>=1.12.0",
+]
+test = [
+  "pytest>=8.4.2",
+  "pytest-cov>=7.0.0",
+]
+build = [
+  "setuptools>=80.9.0",
+  "wheel>=0.45.1",
+]
+docs = [
+  "sphinx>=5.0",
+  "sphinx-rtd-theme>=1.0",
+]
+
+[project.urls]
+homepage = "https://github.com/virtualstaticvoid/tasktronaut"
+documentation = "https://pytorch-geometric.readthedocs.io"
+repository = "https://github.com/virtualstaticvoid/tasktronaut.git"
+changelog = "https://github.com/virtualstaticvoid/tasktronaut/blob/main/CHANGELOG.md"
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+[tool.pylint]
+disable = [
+  # for now, disable docstring checks
+  "C0114", # missing-module-docstring
+  "C0115", # missing-class-docstring
+  "C0116", # missing-function-docstring
+]
+
+[tool.mypy]
+check_untyped_defs = true
+show_column_numbers = true
+strict_optional = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unused_ignores = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test*.py"
+addopts = "--cov=tasktronaut --cov-report=term --cov-report html"
+
+[tool.coverage.run]
+branch = true
+parallel = true
+source = ["tasktronaut"]
+
+[tool.coverage.report]
+show_missing = true
+
+[build-system]
+requires = ["setuptools>=80.9.0", "wheel>=0.45.1"]
+build-backend = "setuptools.build_meta"
