@@ -55,7 +55,6 @@ docs = [
 
 [project.urls]
 homepage = "https://github.com/virtualstaticvoid/tasktronaut"
-documentation = "https://pytorch-geometric.readthedocs.io"
 repository = "https://github.com/virtualstaticvoid/tasktronaut.git"
 changelog = "https://github.com/virtualstaticvoid/tasktronaut/blob/main/CHANGELOG.md"
 
