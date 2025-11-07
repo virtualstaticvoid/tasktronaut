@@ -65,9 +65,12 @@ tasks:
         sh: uv version --short
     prompt: Create a release for version {{.VERSION}} [{{.GIT_SHA}}]?
     cmds:
-      - git tag --sign --message "release" v{{.VERSION}}
+      - |
+        prev=$(git describe --abbrev=0 --tags v{{.VERSION}}^)
+        git log ${prev}..v{{.VERSION}} --pretty=oneline --first-parent > .notes
+      - git tag --sign --file=.notes v{{.VERSION}}
       - git push origin main --tags
-      - gh release create v{{.VERSION}} --title "Version {{.VERSION}}"
+      - gh release create --target v{{.VERSION}} --notes-from-tag --draft --latest
 
   redis-service:
     desc: Run Redis Service
