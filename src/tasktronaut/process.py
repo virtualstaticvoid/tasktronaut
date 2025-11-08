@@ -123,6 +123,10 @@ class ProcessDefinition(ABC):
     description: Description = None
     execution_mode: ExecutionMode = ExecutionMode.SEQUENTIAL
 
+    @abstractmethod
+    def define_process(self, builder: Builder):  # pragma: no cover
+        pass
+
     @classmethod
     def build(
         cls,
@@ -140,10 +144,6 @@ class ProcessDefinition(ABC):
         )
         cls().define_process(builder)
         return builder.process
-
-    @abstractmethod
-    def define_process(self, builder: Builder):  # pragma: no cover
-        pass
 
     def on_started(self, identifier: str):
         logger.info("%s started [%s].", self.__class__.__name__, identifier)
