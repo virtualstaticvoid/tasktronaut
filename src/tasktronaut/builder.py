@@ -30,7 +30,7 @@ class Builder:
     ):
         self.process = process
         self.description = description
-        self.options = self._convert_options(options)
+        self.options: SimpleNamespace = self._convert_options(options)
         self.kwargs = kwargs
 
     @staticmethod

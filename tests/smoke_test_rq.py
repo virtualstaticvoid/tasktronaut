@@ -9,12 +9,12 @@ import tasktronaut as tq
 from tasktronaut.backends.rq import RqBackend
 from tasktronaut.utils import to_kwargs
 
-log_file = "smoke_test_rq.log"
+LOG_FILE = "smoke_test_rq.log"
 
 # ensure log file cleared
-pathlib.Path(log_file).unlink(missing_ok=True)
+pathlib.Path(LOG_FILE).unlink(missing_ok=True)
 
-file_handler = logging.FileHandler(log_file)
+file_handler = logging.FileHandler(LOG_FILE)
 logger = logging.getLogger(__name__)
 logger.propagate = False
 logger.setLevel(logging.DEBUG)
@@ -62,7 +62,7 @@ def main():
 
     assert job.is_finished, "ERROR: Process never finished."
 
-    with open(log_file) as f:
+    with open(LOG_FILE, "r", encoding="UTF-8") as f:
         logs = f.read()
 
     print(logs)
