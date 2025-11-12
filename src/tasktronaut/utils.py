@@ -69,6 +69,12 @@ def load_definition(
     :raises AttributeError: If the definition_class does not exist in the module
     :raises TypeError: If the loaded class cannot be instantiated
     """
+
+    # SECURITY: make sure you trust the module that gets loaded!
+    # consider using an allowed list of module names to
+    # prevent unknown modules (and definitions) from being
+    # loaded dynamically.
+
     module = importlib.import_module(module_name)
     definition_type = getattr(module, definition_class)
     # return new instance of definition type
