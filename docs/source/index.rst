@@ -6,11 +6,14 @@
 ``tasktronaut`` Documentation
 =============================
 
+Welcome to Tasktronaut!
+
 .. toctree::
    :maxdepth: 1
    :caption: Contents:
 
-   user_guide
+   getting-started
+   user-guide
    advanced
    api/modules
 
