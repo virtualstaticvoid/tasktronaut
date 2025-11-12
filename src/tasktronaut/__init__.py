@@ -9,11 +9,18 @@ This module serves as the main entry point, exposing the primary public API for
 the library.
 """
 
+from importlib.metadata import PackageNotFoundError, version
+
 from .backend import Backend
 from .builder import Builder
 from .context import Context
 from .decorators import task
 from .process import ExecutionMode, ProcessDefinition
+
+try:
+    __version__ = version(__name__)
+except PackageNotFoundError:
+    __version__ = "0.0.0.dev"
 
 __all__ = (
     "Backend",
@@ -22,4 +29,5 @@ __all__ = (
     "ExecutionMode",
     "ProcessDefinition",
     "task",
+    "__version__",
 )

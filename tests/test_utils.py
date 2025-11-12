@@ -1,10 +1,14 @@
 import unittest
 
-from tasktronaut.utils import load_definition, to_kwargs, to_dict
+import tasktronaut
+from tasktronaut.utils import load_definition, to_dict, to_kwargs
 from .examples import SimpleSequential
 
 
 class UtilsTestCase(unittest.TestCase):
+    def test_version(self):
+        self.assertNotEqual("0.0.0.dev", tasktronaut.__version__)
+
     def test_to_dict(self):
         result = to_dict(foo=1)
         self.assertIsNotNone(result)
