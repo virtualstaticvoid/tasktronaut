@@ -17,6 +17,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Security
 
+## [0.3.0](https://github.com/virtualstaticvoid/tasktronaut/compare/v0.2.0...v0.3.0) - 2025-11-12
+
+### Added
+
+* `context` argument to the `around_task` hook method
+* `tasktronaut.__version__` attribute
+* library documentation, including getting started guide, user guide and API reference
+* greeting example process
+
+### Removed
+
+* **breaking**: `ProcessDefinition.create_process` is no longer a public method;
+  use `ProcessDefinition.build()` to create a process instead
+
+### Fixed
+
+* task functions without a `context` parameter failed when executed
+
 ## [0.2.0](https://github.com/virtualstaticvoid/tasktronaut/compare/v0.1.0...v0.2.0) - 2025-11-07
 
 ### Changed
