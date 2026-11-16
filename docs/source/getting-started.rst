@@ -29,7 +29,7 @@ For a specific version:
 
 .. code-block:: bash
 
-    pip install tasktronaut[rq]==0.3.0
+    pip install tasktronaut[rq]==0.4.0
 
 Installing with Optional Dependencies
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

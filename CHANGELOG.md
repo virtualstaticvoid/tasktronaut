@@ -17,6 +17,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Security
 
+## [0.4.0](https://github.com/virtualstaticvoid/tasktronaut/compare/v0.3.0...v0.4.0) - 2026-11-16
+
+### Added
+
+* `rq` optional dependency extra (`pip install tasktronaut[rq]`), as already described in the documentation
+
+### Changed
+
+* require `rq>=3.0.0` (and `django-rq>=4.2.0` for development)
+
+### Fixed
+
+* jobs which completed successfully could be left in RQ's started job registry, and later marked as failed
+  with `AbandonedJobError`, when RQ < 3.0 retried the success handling transaction after a `WatchError`
+
 ## [0.3.0](https://github.com/virtualstaticvoid/tasktronaut/compare/v0.2.0...v0.3.0) - 2025-11-12
 
 ### Added
