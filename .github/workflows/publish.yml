@@ -33,7 +33,7 @@ jobs:
       id-token: write
     environment:
       name: pypi
-      url: https://pypi.org/p/tasktronaut-py
+      url: https://pypi.org/p/tasktronaut
     steps:
       - name: Retrieve release distributions
         uses: actions/download-artifact@v5
