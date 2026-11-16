@@ -19,6 +19,15 @@ dependencies = [
   "pydantic>=2.12.4",
 ]
 
+[project.optional-dependencies]
+rq = [
+  "redis>=7.0.1",
+  # rq < 3.0 can leave finished jobs in the started job registry when the
+  # success-handling transaction is retried (WatchError), so they are later
+  # marked failed with AbandonedJobError; rq 3.0 fixes this.
+  "rq>=3.0.0",
+]
+
 [dependency-groups]
 dev = [
   { include-group = "build" },
@@ -33,10 +42,10 @@ dev = [
 ]
 rq = [
   "redis>=7.0.1",
-  "rq>=2.6.0",
+  "rq>=3.0.0",
 ]
 django-rq = [
-  "django-rq>=3.1",
+  "django-rq>=4.2.0",
 ]
 dagster = [
   "dagster>=1.12.0",
