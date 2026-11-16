@@ -1,6 +1,6 @@
 [project]
 name = "tasktronaut"
-version = "0.3.0"
+version = "0.4.0"
 description = "A simple task orchestration library for running complex processes or workflows in Python."
 readme = "README.md"
 requires-python = ">=3.10"
