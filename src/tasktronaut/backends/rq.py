@@ -5,14 +5,157 @@ This module provides a concrete implementation of the Backend abstract base clas
 using the RQ (Redis Queue) job queue library. It enables asynchronous execution
 of Tasktronaut processes with support for job dependencies and Redis-backed
 job persistence.
+
+Workers executing Tasktronaut processes should use :class:`RqQueue` (or a queue class
+including :class:`JobScopedReadyJobRegistryMixin`) as their queue class, so that the
+jobs of a process are enqueued as soon as the jobs they depend on have finished. For
+example, ``rq worker --queue-class tasktronaut.backends.rq.RqQueue``.
 """
 
+import logging
 from typing import Any, Dict, List, Optional, Union, cast
 
 import rq
+from redis.exceptions import WatchError
+from rq.job import JobStatus
+from rq.registry import ReadyJobRegistry
+from rq.utils import as_text
 
 from ..backend import Backend, Job
 from ..types import Description
+
+logger = logging.getLogger(__name__)
+
+
+class JobScopedReadyJobRegistry(ReadyJobRegistry):
+    """
+    Ready job registry whose claim of a job only conflicts with changes to that job.
+
+    RQ 3.0 claims each ready dependent job in an optimistic transaction which watches
+    the queue's shared ready job registry as well as the job. Every worker writes to
+    that registry when readying or enqueueing any dependent job, so concurrent
+    hand-offs of unrelated jobs abort each other, and the aborted job waits for worker
+    maintenance, which can be up to ten minutes later. Meanwhile, the subsequent steps
+    of the process sit in the deferred job registry.
+
+    Watching only the job keeps the guarantee against enqueueing a job twice: every
+    successful claim, and every deletion or cancellation of a job, writes the job's
+    hash in its transaction, so a competing change to the same job still aborts the
+    claim.
+    """
+
+    def enqueue_jobs(self, job_ids: List[str]) -> List[rq.job.Job]:
+        """
+        Move ready jobs from the registry onto the queue.
+
+        Mirrors RQ 3.0's :meth:`rq.registry.ReadyJobRegistry.enqueue_jobs` except for
+        the keys it watches; re-check it against RQ's implementation when upgrading
+        RQ. A job whose claim conflicts with a concurrent change to that job is
+        skipped and left for :meth:`cleanup`.
+
+        :param job_ids: Ids of the jobs to enqueue, in enqueue order
+        :type job_ids: List[str]
+        :return: The jobs that were enqueued
+        :rtype: List[rq.job.Job]
+        """
+        if not job_ids:
+            return []
+
+        queue = rq.Queue(
+            name=self.name,
+            connection=self.connection,
+            job_class=self.job_class,
+            serializer=self.serializer,
+        )
+        fetched = self.job_class.fetch_many(
+            job_ids, connection=self.connection, serializer=self.serializer
+        )
+
+        enqueued: List[rq.job.Job] = []
+        for job_id, job in zip(job_ids, fetched):
+            if job is None:
+                self.connection.zrem(self.key, job_id)
+                continue
+            if job.get_status(refresh=False) != JobStatus.READY_TO_ENQUEUE:
+                self.connection.zrem(self.key, job_id)
+                continue
+            try:
+                with self.connection.pipeline() as pipe:
+                    # NOTE: RQ also watches `self.key`, the shared registry
+                    pipe.watch(job.key)
+
+                    if pipe.zscore(self.key, job.id) is None:
+                        pipe.unwatch()
+                        continue
+
+                    status = cast(
+                        Optional[Union[bytes, str]], pipe.hget(job.key, "status")
+                    )
+                    if (
+                        not status
+                        or JobStatus(as_text(status)) != JobStatus.READY_TO_ENQUEUE
+                    ):
+                        pipe.multi()
+                        self.remove(job, pipeline=pipe)
+                        pipe.execute()
+                        continue
+
+                    pipe.multi()
+                    self.remove(job, pipeline=pipe)
+                    # pylint: disable=protected-access
+                    if job.has_rate_limit:
+                        queue._enqueue_rate_limited_job(job, pipeline=pipe)
+                    else:
+                        queue._enqueue_job(
+                            job,
+                            pipeline=pipe,
+                            at_front=job.should_enqueue_at_front(),
+                        )
+                    pipe.execute()
+            except WatchError:
+                logger.info(
+                    "Ready job %s changed while enqueueing; skipping for now", job_id
+                )
+                continue
+            except Exception:  # pylint: disable=broad-exception-caught
+                logger.exception(
+                    "Failed to enqueue ready job %s; leaving in ReadyJobRegistry",
+                    job_id,
+                )
+                continue
+            enqueued.append(job)
+        return enqueued
+
+
+class JobScopedReadyJobRegistryMixin:  # pylint: disable=too-few-public-methods
+    """
+    Queue mixin which hands off ready dependent jobs via the job-scoped registry.
+
+    A worker enqueues the dependents of a finished job through the
+    ``ready_job_registry`` of its queue class, so mix this into the queue class
+    workers are configured with. For example, with ``django-rq``::
+
+        class ApplicationQueue(JobScopedReadyJobRegistryMixin, DjangoRQ):
+            pass
+
+        RQ = {"QUEUE_CLASS": "myapp.queues.ApplicationQueue"}
+    """
+
+    @property
+    def ready_job_registry(self) -> JobScopedReadyJobRegistry:
+        queue = cast(rq.Queue, self)
+        return JobScopedReadyJobRegistry(
+            queue=queue, job_class=queue.job_class, serializer=queue.serializer
+        )
+
+
+class RqQueue(JobScopedReadyJobRegistryMixin, rq.Queue):
+    """
+    RQ queue which hands off ready dependent jobs via :class:`JobScopedReadyJobRegistry`.
+
+    Use it as the queue class of workers executing Tasktronaut processes, e.g.
+    ``rq worker --queue-class tasktronaut.backends.rq.RqQueue``.
+    """
 
 
 # pylint: disable=too-many-arguments,too-many-positional-arguments

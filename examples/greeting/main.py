@@ -1,13 +1,12 @@
 import redis
-import rq
 
 from greeting_process import GreetingProcess
-from tasktronaut.backends.rq import RqBackend
+from tasktronaut.backends.rq import RqBackend, RqQueue
 
 
 def main():
     connection = redis.Redis()
-    queue = rq.Queue(connection=connection)
+    queue = RqQueue(connection=connection)
     backend = RqBackend(queue=queue)
 
     process = GreetingProcess.build(name="Chris")

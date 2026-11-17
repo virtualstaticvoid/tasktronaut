@@ -6,7 +6,7 @@ import redis
 import rq
 
 import tasktronaut as tq
-from tasktronaut.backends.rq import RqBackend
+from tasktronaut.backends.rq import RqBackend, RqQueue
 from tasktronaut.utils import to_kwargs
 
 LOG_FILE = "smoke_test_rq.log"
@@ -48,13 +48,13 @@ class SimpleDefinition(tq.ProcessDefinition):
 
 def main():
     connection = redis.Redis()
-    queue = rq.Queue(connection=connection)
+    queue = RqQueue(connection=connection)
     backend = RqBackend(queue=queue)
 
     process = SimpleDefinition.build(a="foo")
     job: rq.job.Job = process.enqueue(backend)
 
-    worker = rq.SimpleWorker([queue])
+    worker = rq.SimpleWorker([queue], queue_class=RqQueue)
 
     # blocking call, until all jobs are finished
     # if no jobs, will return immediately
