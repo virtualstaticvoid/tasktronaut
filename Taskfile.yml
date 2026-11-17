@@ -76,7 +76,9 @@ tasks:
     cmds:
       - uv version --bump minor
       - uv sync
-      - git add pyproject.toml uv.lock
+      - sed -i -E 's/(tasktronaut(\[[a-z,]+\])?==)[0-9][0-9.]*/\1{{.NEXT}}/' docs/source/getting-started.rst
+      - grep -q '=={{.NEXT}}' docs/source/getting-started.rst
+      - git add pyproject.toml uv.lock docs/source/getting-started.rst
       - git commit -m "bump version"
 
   release:
