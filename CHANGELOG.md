@@ -17,6 +17,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Security
 
+## [0.5.0](https://github.com/virtualstaticvoid/tasktronaut/compare/v0.4.0...v0.5.0) - 2026-11-17
+
+### Added
+
+* `tasktronaut.backends.rq.RqQueue` queue class, and `JobScopedReadyJobRegistryMixin` for custom queue classes
+  (e.g. `django-rq`'s `DjangoRQ`), which hand off ready dependent jobs via `JobScopedReadyJobRegistry`
+
+### Fixed
+
+* steps of a process could wait up to ten minutes (until RQ worker maintenance) before being enqueued, because
+  RQ 3.0 aborts the hand-off of a ready dependent job whenever any other worker concurrently readies or enqueues
+  a dependent job on the same queue; workers should use `RqQueue` (e.g. `rq worker --queue-class
+  tasktronaut.backends.rq.RqQueue`) as their queue class
+
 ## [0.4.0](https://github.com/virtualstaticvoid/tasktronaut/compare/v0.3.0...v0.4.0) - 2026-11-16
 
 ### Added
