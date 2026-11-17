@@ -84,12 +84,18 @@ tasks:
     preconditions:
       - sh: git diff-index --quiet HEAD --
         msg: "ERROR: Uncommitted files found."
+      - sh: gh auth status --active
+        msg: "ERROR: GitHub CLI not logged in. Run `gh auth login` first."
     vars:
       GIT_SHA:
         sh: git rev-parse --short HEAD
       VERSION:
         sh: uv version --short
-    prompt: Create a release for version {{.VERSION}} [{{.GIT_SHA}}]?
+      GH_USER:
+        sh: gh api user --jq .login 2>/dev/null || true
+    prompt:
+      - Create a release for version {{.VERSION}} [{{.GIT_SHA}}]?
+      - Create the GitHub release as user '{{.GH_USER}}'?
     cmds:
       - |
         prev=$(git describe --abbrev=0 --tags HEAD)
