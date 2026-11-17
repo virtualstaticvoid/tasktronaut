@@ -51,6 +51,14 @@ jobs:
       - uses: ./.github/actions/preparation
       - name: Smoke test
         run: uv run python tests/smoke_test_rq.py
+      - name: Test greeting example
+        working-directory: examples/greeting
+        run: |
+          set -o pipefail
+          ./example
+          ./worker --burst 2>&1 | tee "$RUNNER_TEMP/worker.log"
+          # the completion job only runs once every task has succeeded
+          grep -q "Successfully completed tasktronaut.backend.Backend.perform_complete" "$RUNNER_TEMP/worker.log"
 
   build:
     name: Test Python package build
