@@ -65,6 +65,31 @@ Verify the installation was successful by importing Tasktronaut in a Python shel
 
 If you see the version number without errors, you're ready to go!
 
+Configuring RQ Workers
+~~~~~~~~~~~~~~~~~~~~~~
+
+When executing processes with RQ, use :class:`tasktronaut.backends.rq.RqQueue` as the
+queue class of your workers, so that each step of a process is enqueued as soon as the
+steps it depends on have finished, even when many workers are busy:
+
+.. code-block:: bash
+
+    rq worker --queue-class tasktronaut.backends.rq.RqQueue
+
+With ``django-rq``, mix :class:`tasktronaut.backends.rq.JobScopedReadyJobRegistryMixin`
+into the queue class and configure it with the ``QUEUE_CLASS`` setting:
+
+.. code-block:: python
+
+    from django_rq.queues import DjangoRQ
+    from tasktronaut.backends.rq import JobScopedReadyJobRegistryMixin
+
+    class ApplicationQueue(JobScopedReadyJobRegistryMixin, DjangoRQ):
+        pass
+
+    # settings.py
+    RQ = {"QUEUE_CLASS": "myapp.queues.ApplicationQueue"}
+
 
 Your First Process
 ------------------
