@@ -88,11 +88,12 @@ class JobScopedReadyJobRegistry(ReadyJobRegistry):
                         pipe.unwatch()
                         continue
 
-                    status = cast(
-                        Optional[Union[bytes, str]], pipe.hget(job.key, "status")
-                    )
+                    status = pipe.hget(job.key, "status")
+                    # NOTE: `isinstance` narrows the type of `status` for both the
+                    #  loosely (redis < 8) and precisely (redis >= 8) typed `hget`
                     if (
                         not status
+                        or not isinstance(status, (bytes, str))
                         or JobStatus(as_text(status)) != JobStatus.READY_TO_ENQUEUE
                     ):
                         pipe.multi()
