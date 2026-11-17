@@ -33,11 +33,31 @@ jobs:
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
         run: bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
 
+  smoke-test:
+    name: Smoke test Python code
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: docker.io/redis:8
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/preparation
+      - name: Smoke test
+        run: uv run python tests/smoke_test_rq.py
+
   build:
     name: Test Python package build
     runs-on: ubuntu-latest
     needs:
       - test
+      - smoke-test
     services:
       redis:
         image: docker.io/redis:8
